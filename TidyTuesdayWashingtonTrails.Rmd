@@ -1,0 +1,171 @@
+---
+title: "TidyTuesdayWashingtonTrails"
+author: "Jeff Grayum"
+date: "11/25/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Packages
+```{r}
+library(tidyverse)
+library(tidytuesdayR)
+library(ggthemes)
+library(tvthemes)
+library(scales)
+```
+
+Datasets
+```{r}
+tuesdata <- tidytuesdayR::tt_load('2020-11-24')
+
+hike_data <- tuesdata$hike_data
+```
+
+Getting a "feel" for the data.
+```{r}
+hike_data %>%
+  str() #Notice gain, rating, and highpoint are all numeric.  Change it!!
+
+hike_data <- hike_data %>% 
+   mutate(gain = as.numeric(gain),
+         rating = as.numeric(rating),
+         highpoint = as.numeric(highpoint)) %>%
+  rename(park = location) %>%
+  view()
+
+#Check to make sure it worked.
+hike_data %>%
+  str()
+
+hike_data %>%
+  view() 
+
+#First, we will make a graph showing the number of trails in the twenty busiest locations.
+
+hike_data %>% 
+  distinct(park) %>%
+  view()
+
+
+busiest_parks <- hike_data %>%
+  group_by(park) %>%
+  summarize(avg_rating = mean(rating, na.rm = TRUE),
+            number_trails = n()) %>%
+  arrange(desc(number_trails)) %>%
+  head(20) %>%
+  mutate(park = fct_reorder(park, number_trails)) %>%
+  ggplot(aes(number_trails, park, fill = avg_rating)) +
+  geom_col() +
+  theme_fivethirtyeight() +
+  theme(axis.title = element_text(),
+        text = element_text(family = "Times New Roman")) +
+  labs(x = "Number of trails",
+       y = "",
+       fill = "Average rating",
+       title = "The twentiest busiest parks in Washington state") +
+  scale_color_avatar()
+  
+
+
+busiest_parks %>%
+  ggplot(aes(n, park)) +
+  geom_col() +
+  theme_fivethirtyeight() +
+  theme(axis.title = element_text(),
+        text = element_text(family = "Times New Roman")) +
+  labs(title = "Washington States busiest hiking locations",
+       subtitle = "Showing the twenty locations in Washington with the most hiking trails",
+       x = "Number of trails",
+       y = "Location")
+
+
+#Now, lets see how the average rating for each location compares to the gain, highpoint, and number of hikes
+park_ratings <- hike_data %>%
+  group_by(park) %>%
+  summarize(avg_rating = mean(rating, na.rm = TRUE),
+            max_highpoint = max(highpoint),
+            avg_gain = mean(gain, na.rm = TRUE),
+            num_trails = n()) %>%
+  ungroup() %>%
+  view()
+
+#Let's see what features the top ten parks share!
+
+top_ten %>%
+  ggplot(aes(park, avg_rating)) +
+  geom_line() +
+  geom_ribbon(ymin = q25, ymax = q75, alpha = 0.5)
+  
+top_ten <- park_ratings %>%
+  arrange(desc(avg_rating)) %>%
+  head(10) %>%
+  view()
+
+
+top_ten %>%
+  ggplot(aes(max_highpoint, avg_rating)) +
+  geom_point() +
+  theme_fivethirtyeight() +
+  theme(axis.title = element_text(),
+        text = element_text(family = "Times New Roman")) +
+  labs(title = "Maximum highpoint in park vs average trail rating in park",
+       x = "Highpoint",
+       y = "Average Rating", 
+       subtitle = "Only showing Washington's ten highest rated parks")
+ 
+top_ten %>%
+  ggplot(aes(num_trails, avg_rating)) +
+  geom_point() +
+  theme_fivethirtyeight() +
+  theme(axis.title = element_text(),
+        text = element_text(family = "Times New Roman")) +
+  labs(title = "Number of trails vs average trail rating in park",
+       x = "Number of trails",
+       y = "Average Rating", 
+       subtitle = "Only showing Washington's ten highest rated parks")
+
+top_ten %>%
+  ggplot(aes(avg_gain, avg_rating)) +
+  geom_point() +
+  theme_fivethirtyeight() +
+  theme(axis.title = element_text(),
+        text = element_text(family = "Times New Roman")) +
+  labs(title = "Average gain in park vs average trail rating in park",
+       x = "Average gain",
+       y = "Average Rating", 
+       subtitle = "Only showing Washington's ten highest rated parks")
+
+
+```
+
+
+That was all pretty worthless.  Now lets look at the top rated trails, and see what connects them.
+```{r}
+top_trails <- hike_data %>%
+  arrange(desc(rating)) %>%
+  filter(rating >= 4.8) %>%
+  view()
+
+top_trails %>%
+  mutate(name = fct_reorder(name, rating)) %>%
+  ggplot(aes(rating, name)) +
+  geom_col() +
+  theme_fivethirtyeight() +
+  labs(title = "The top rated hiking trails in Washington state",
+       x = "Rating",
+       y = "Trail",
+       caption = "Trails rated out of 5 stars") +
+  theme(axis.title = element_text(),
+        text = element_text(family = "Times New Roman"))
+
+hike_data %>%
+  ggplot(aes(gain, highpoint, size = rating, color = )) +
+  geom_point(alpha = 0.5)
+```
+
