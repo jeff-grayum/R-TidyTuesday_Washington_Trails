@@ -70,7 +70,11 @@ busiest_parks <- hike_data %>%
        fill = "Average rating",
        title = "The twentiest busiest parks in Washington state") +
   scale_color_avatar()
+
+busiest <- busiest_parks %>%
+  select(park)
   
+
 
 
 busiest_parks %>%
@@ -167,5 +171,43 @@ top_trails %>%
 hike_data %>%
   ggplot(aes(gain, highpoint, size = rating, color = )) +
   geom_point(alpha = 0.5)
+```
+
+```{r}
+hike_data %>%
+  filter(park %in% twenty_busiest) %>%
+  ggplot(aes(rating, park)) +
+  geom_boxplot() +
+  labs(title = "Trail ratings for Washington state's twenty busiest parks",
+       x = "Rating",
+       y = NULL) +
+  theme_parksAndRec() +
+  theme(text = element_text(family = "Times New Roman"),
+        panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank())
+  
+           
+twenty_busiest <- c("Puget Sound and Islands -- Seattle-Tacoma Area", 
+                    "North Cascades -- Mountain Loop Highway", 
+                    "North Cascades -- North Cascades Highway - Hwy", 
+                    "Olympic Peninsula -- Hood Canal", 
+                    "Snoqualmie Region -- Snoqualmie Pass",
+                    "Snoqualmie Region -- Salmon La Sac/Teanaway",
+                    "Mount Rainier Area -- Chinook Pass - Hwy 410",
+                    "Snoqualmie Region -- North Bend Area",
+                    "Central Cascades -- Stevens Pass - West",
+                    "Central Cascades -- Stevens Pass - East",
+                    "Olympic Peninsula -- Northern Coast",
+                    "Mount Rainier Area -- SW - Longmire/Paradise",
+                    "South Cascades -- Mount St. Helens",
+                    "Central Cascades -- Entiat Mountains/Lake Chelan",
+                    "Eastern Washington -- Spokane Area/Coeur d'Alene",
+                    "Puget Sound and Islands -- Bellingham Area",
+                    "South Cascades -- White Pass/Cowlitz River Valley",
+                    "Southwest Washington -- Columbia River Gorge - WA",
+                    "North Cascades -- Mount Baker Area", "South Cascades -- Mount Adams Area")
+
+
+
 ```
 
